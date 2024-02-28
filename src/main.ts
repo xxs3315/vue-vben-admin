@@ -5,7 +5,7 @@ import 'ant-design-vue/dist/reset.css';
 // Register icon sprite
 import 'virtual:svg-icons-register';
 
-import { createApp } from 'vue';
+import { createApp, defineAsyncComponent } from 'vue';
 
 import { registerGlobComp } from '@/components/registerGlobComp';
 import { setupGlobDirectives } from '@/directives';
@@ -20,6 +20,17 @@ import App from './App.vue';
 
 async function bootstrap() {
   const app = createApp(App);
+
+  const PartFrameAsyncComp = defineAsyncComponent(
+    () => import('/@/views/demo/part-iframe/PartIFrame.vue'),
+  );
+
+  const PartFrameBlankAsyncComp = defineAsyncComponent(
+    () => import('/@/views/sys/part-iframe/PartFrameBlank.vue'),
+  );
+
+  app.component('PartFrame', PartFrameAsyncComp);
+  app.component('PartFrameBlank', PartFrameBlankAsyncComp);
 
   // Configure store
   // 配置 store

@@ -4,6 +4,7 @@ import { LAYOUT } from '@/router/constant';
 import { t } from '@/hooks/web/useI18n';
 
 const IFrame = () => import('@/views/sys/iframe/FrameBlank.vue');
+const PartIFrame = () => import('/@/views/sys/part-iframe/PartFrameBlank.vue');
 
 const iframe: AppRouteModule = {
   path: '/frame',
@@ -41,6 +42,23 @@ const iframe: AppRouteModule = {
       component: IFrame,
       meta: {
         title: t('routes.demo.iframe.docExternal'),
+      },
+    },
+    {
+      path: 'partFrame',
+      name: 'PartFrame',
+      component: PartIFrame,
+      meta: {
+        partFrameSrc: 'PartFrame',
+        title: t('routes.demo.iframe.partFrame'),
+      },
+    },
+    {
+      path: 'partFrameNoCahce',
+      name: 'partFrameNoCahce',
+      component: () => import('/@/views/demo/part-iframe/PartIFrame.vue'),
+      meta: {
+        title: t('routes.demo.iframe.partFrameNoCache'),
       },
     },
   ],
