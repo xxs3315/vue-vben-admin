@@ -1,6 +1,11 @@
 <template>
   <div :class="prefixCls" :style="getWrapStyle">
-    <component :is="frameSrcRef" :class="`${prefixCls}__main`" ref="partFrameRef" />
+    <component
+      :is="frameSrcRef"
+      v-if="frameSrcRef"
+      :class="`${prefixCls}__main`"
+      ref="partFrameRef"
+    />
   </div>
 </template>
 <script lang="ts" setup>
