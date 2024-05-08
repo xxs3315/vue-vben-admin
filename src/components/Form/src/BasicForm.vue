@@ -207,6 +207,7 @@
     removeSchemaByField,
     resetFields,
     scrollToField,
+    resetDefaultField,
   } = useFormEvents({
     emit,
     getProps,
@@ -285,7 +286,7 @@
     if (!autoSubmitOnEnter) return;
     if (e.key === 'Enter' && e.target && e.target instanceof HTMLElement) {
       const target: HTMLElement = e.target as HTMLElement;
-      if (target && target.tagName && target.tagName.toUpperCase() == 'INPUT') {
+      if (target && target.tagName && target.tagName.toUpperCase() === 'INPUT') {
         handleSubmit();
       }
     }
@@ -305,6 +306,7 @@
     validate,
     submit: handleSubmit,
     scrollToField: scrollToField,
+    resetDefaultField,
   };
 
   const getFormActionBindProps = computed(
