@@ -5,6 +5,9 @@ import 'ant-design-vue/dist/reset.css';
 // Register icon sprite
 import 'virtual:svg-icons-register';
 
+import { Workbook } from 'vma-sheet';
+import 'vma-sheet/lib/index.css';
+
 import { createApp, defineAsyncComponent } from 'vue';
 
 import { registerGlobComp } from '@/components/registerGlobComp';
@@ -20,6 +23,8 @@ import App from './App.vue';
 
 async function bootstrap() {
   const app = createApp(App);
+
+  app.use(Workbook);
 
   const PartFrameAsyncComp = defineAsyncComponent(
     () => import('/@/views/demo/part-iframe/PartIFrame.vue'),
