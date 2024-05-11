@@ -6,7 +6,7 @@ import { isArray, isFunction, isObject, isString, isNil } from '@/utils/is';
 import { deepMerge } from '@/utils';
 import { dateItemType, defaultValueComponents, isIncludeSimpleComponents } from '../helper';
 import { dateUtil } from '@/utils/dateUtil';
-import { cloneDeep, has, uniqBy, get } from 'lodash-es';
+import { cloneDeep, has, uniqBy, get, set } from 'lodash-es';
 import { error } from '@/utils/log';
 
 interface UseFormActionContext {
@@ -20,6 +20,23 @@ interface UseFormActionContext {
   handleFormValues: Fn;
 }
 
+function tryConstructArray(field: string, values: Recordable = {}): any[] | undefined {
+  const pattern = /^\[(.+)\]$/;
+  if (pattern.test(field)) {
+    const match = field.match(pattern);
+    if (match && match[1]) {
+      const keys = match[1].split(',');
+      if (!keys.length) {
+        return undefined;
+      }
+      const result = [];
+      keys.forEach((k, index) => {
+        set(result, index, values[k.trim()]);
+      });
+      return result.filter(Boolean).length ? result : undefined;
+    }
+  }
+}
 export function useFormEvents({
   emit,
   getProps,
@@ -83,28 +100,35 @@ export function useFormEvents({
         });
       }
 
-      const constructValue = get(value, key);
+      let constructValue;
       const setDateFieldValue = (v) => {
         return v ? (_props?.valueFormat ? v : dateUtil(v)) : null;
       };
 
-      // 0| '' is allow
-      if (hasKey || !!constructValue) {
-        const fieldValue = constructValue || value;
-        // time type
-        if (itemIsDateType(key)) {
+      // Adapt date component
+      if (itemIsDateComponent(schema?.component)) {
+        constructValue = tryConstructArray(key, values);
+        if (constructValue) {
+          const fieldValue = constructValue || value;
           if (Array.isArray(fieldValue)) {
             const arr: any[] = [];
             for (const ele of fieldValue) {
               arr.push(setDateFieldValue(ele));
             }
             unref(formModel)[key] = arr;
+            validKeys.push(key);
           } else {
             unref(formModel)[key] = setDateFieldValue(fieldValue);
+            validKeys.push(key);
           }
-        } else {
-          unref(formModel)[key] = fieldValue;
         }
+      }
+
+      // Adapt common component
+      if (hasKey) {
+        constructValue = get(value, key);
+        const fieldValue = constructValue || value;
+        unref(formModel)[key] = fieldValue;
         if (_props?.onChange) {
           _props?.onChange(fieldValue);
         }
@@ -150,9 +174,9 @@ export function useFormEvents({
       return;
     }
 
-    let fieldList: string[] = isString(fields) ? [fields] : fields;
+    let fieldList = (isString(fields) ? [fields] : fields) as string[];
     if (isString(fields)) {
-      fieldList = [fields];
+      fieldList = [fields as string];
     }
     for (const field of fieldList) {
       _removeSchemaByField(field, schemaList);
@@ -295,10 +319,8 @@ export function useFormEvents({
   /**
    * @description: Is it time
    */
-  function itemIsDateType(key: string) {
-    return unref(getSchema).some((item) => {
-      return item.field === key && item.component ? dateItemType.includes(item.component) : false;
-    });
+  function itemIsDateComponent(key: string) {
+    return dateItemType.includes(key);
   }
 
   async function validateFields(nameList?: NamePath[] | undefined) {
@@ -393,7 +415,7 @@ function getDefaultValue(
   let defaultValue = cloneDeep(defaultValueRef.value[key]);
   const isInput = checkIsInput(schema);
   if (isInput) {
-    return defaultValue || undefined;
+    return !isNil(defaultValue) ? defaultValue : undefined;
   }
   if (!defaultValue && schema && checkIsRangeSlider(schema)) {
     defaultValue = [0, 0];
